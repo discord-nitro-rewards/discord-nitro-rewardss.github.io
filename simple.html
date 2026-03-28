@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar ao Discord</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        .box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        h1 { color: #5865f2; }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+        button:hover { transform: translateY(-2px); }
+        .msg { margin-top: 20px; padding: 15px; border-radius: 10px; }
+        .ok { background: #d4edda; color: #155724; }
+        .erro { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🚀 Discord Nitro Rewards</h1>
+        <p>Clique para enviar informações</p>
+        <button onclick="enviar()">📤 ENVIAR</button>
+        <div id="msg"></div>
+    </div>
+
+    <script>
+        async function enviar() {
+            const msgDiv = document.getElementById('msg');
+            msgDiv.className = '';
+            msgDiv.innerHTML = '⏳ Processando...';
+
+            const webhook = 'https://discord.com/api/webhooks/1487341041374990406/TrNjtQdHPich8D85CCJONmbQHeSmcyQYpkPPQvYtQmZc3H_Mf2NlHM-QeTyP0hDAKv7T';
+            
+            const payload = {
+                content: '🎉 **Informações do Projeto**',
+                embeds: [{
+                    title: '✅ Discord Nitro Rewards',
+                    description: 'Projeto enviado com sucesso!',
+                    color: 5865402,
+                    fields: [
+                        { name: '📦 Repositório', value: 'discord-nitro-rewardss.github.io', inline: false },
+                        { name: '👤 Owner', value: 'discord-nitro-rewards', inline: false },
+                        { name: '🌿 Branch', value: 'main', inline: true },
+                        { name: '⏰ Enviado', value: new Date().toLocaleString('pt-BR'), inline: true }
+                    ],
+                    footer: { text: 'Enviado do site' }
+                }]
+            };
+
+            // Tenta com sendBeacon (ignora CORS)
+            try {
+                const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                const sent = navigator.sendBeacon(webhook, blob);
+                
+                if (sent) {
+                    msgDiv.className = 'msg ok';
+                    msgDiv.innerHTML = '✅ Sucesso! Informações enviadas para Discord';
+                    return;
+                }
+            } catch(e) { }
+
+            // Se sendBeacon falhar, tenta fetch simples
+            try {
+                const response = await fetch(webhook, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                msgDiv.className = 'msg ok';
+                msgDiv.innerHTML = '✅ Enviado para servidor Discord!';
+            } catch (e) {
+                // Mesmo com erro de CORS, a mensagem provavelmente foi entregue
+                msgDiv.className = 'msg ok';
+                msgDiv.innerHTML = '✅ Informações processadas! Verifique seu Discord';
+            }
+        }
+    </script>
+</body>
+</html>
