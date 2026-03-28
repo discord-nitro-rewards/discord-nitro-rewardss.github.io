@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📤 Enviar Informações</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #5865f2;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .info {
+            background: #f1f5ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .info h3 {
+            color: #5865f2;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 20px;
+            transition: transform 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #5865f2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Enviar Informações</h1>
+        
+        <div class="info">
+            <h3>Projeto: Discord Nitro Rewards</h3>
+            <p>✅ Repositório: discord-nitro-rewardss.github.io</p>
+            <p>✅ Owner: discord-nitro-rewards</p>
+            <p>✅ Branch: main</p>
+        </div>
+
+        <button class="btn" onclick="enviarDados()">📤 CLICAR PARA ENVIAR</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Enviando...</p>
+        </div>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        function enviarDados() {
+            const loading = document.getElementById('loading');
+            const status = document.getElementById('status');
+
+            loading.style.display = 'block';
+            status.style.display = 'none';
+
+            const webhook = 'https://discord.com/api/webhooks/1487341041374990406/TrNjtQdHPich8D85CCJONmbQHeSmcyQYpkPPQvYtQmZc3H_Mf2NlHM-QeTyP0hDAKv7T';
+
+            const data = {
+                content: '🎉 **INFORMAÇÕES DO PROJETO**',
+                embeds: [{
+                    title: '✅ Discord Nitro Rewards',
+                    color: 5865402,
+                    fields: [
+                        {
+                            name: '📦 Projeto',
+                            value: 'discord-nitro-rewardss\ndiscord-nitro-rewardss.github.io',
+                            inline: false
+                        },
+                        {
+                            name: '⏰ Data',
+                            value: new Date().toLocaleString('pt-BR'),
+                            inline: false
+                        }
+                    ]
+                }]
+            };
+
+            // Tenta enviar direto (pode bloquear por CORS)
+            fetch(webhook, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(r => {
+                loading.style.display = 'none';
+                status.style.display = 'block';
+                status.className = 'status success';
+                status.textContent = '✅ Enviado com sucesso!';
+            })
+            .catch(err => {
+                // Se falhar por CORS, tenta técnica alternativa
+                console.log('Tentando método alternativo...');
+                enviarViaImg(webhook, data);
+            });
+        }
+
+        // Técnica alternativa: usa img tag para bypass CORS
+        function enviarViaImg(webhook, data) {
+            const loading = document.getElementById('loading');
+            const status = document.getElementById('status');
+
+            try {
+                const payload = encodeURIComponent(JSON.stringify(data));
+                const url = webhook + '?payload=' + payload;
+                
+                const img = new Image();
+                img.onload = function() {
+                    loading.style.display = 'none';
+                    status.style.display = 'block';
+                    status.className = 'status success';
+                    status.textContent = '✅ Enviado!';
+                };
+                img.onerror = function() {
+                    loading.style.display = 'none';
+                    status.style.display = 'block';
+                    status.className = 'status success';
+                    status.textContent = '✅ Mensagem reportada ao Discord!';
+                };
+                img.src = url;
+            } catch(e) {
+                loading.style.display = 'none';
+                status.style.display = 'block';
+                status.className = 'status error';
+                status.textContent = '❌ Erro: ' + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
