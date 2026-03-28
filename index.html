@@ -138,15 +138,58 @@
     </div>
 
     <script>
-        // Manipulação do botão "Começar Agora"
+        // ✅ Função de rastreamento segura
+        async function trackClick() {
+            try {
+                const userAgent = navigator.userAgent;
+                const browser = getBrowser(userAgent);
+                const device = getDevice(userAgent);
+                const language = navigator.language;
+
+                const response = await fetch('/.netlify/functions/track-click', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        timestamp: new Date().toLocaleString('pt-BR'),
+                        browser: browser,
+                        device: device,
+                        language: language,
+                        page: window.location.href
+                    })
+                });
+
+                const result = await response.json();
+                console.log('✅ Clique registrado no Discord:', result);
+                
+            } catch (error) {
+                console.error('⚠️ Erro ao registrar clique:', error);
+            }
+        }
+
+        // Detecta navegador
+        function getBrowser(ua) {
+            if (ua.includes('Chrome')) return 'Chrome';
+            if (ua.includes('Firefox')) return 'Firefox';
+            if (ua.includes('Safari')) return 'Safari';
+            if (ua.includes('Edge')) return 'Edge';
+            return 'Outro';
+        }
+
+        // Detecta dispositivo
+        function getDevice(ua) {
+            if (/mobile/i.test(ua)) return 'Mobile';
+            if (/tablet/i.test(ua)) return 'Tablet';
+            return 'Desktop';
+        }
+
+        // 🎯 Botão "Começar Agora" - Com rastreamento
         document.getElementById('btnStart').addEventListener('click', function(e) {
             e.preventDefault();
-            alert('🎉 Bem-vindo ao Discord Nitro Rewards!\n\nEm breve você será redirecionado para o painel de recompensas.');
-            // Aqui você pode adicionar um redirecionamento real:
-            // window.location.href = 'https://seusite.com/rewards';
+            trackClick(); // Registra no Discord
+            alert('🎉 Bem-vindo ao Discord Nitro Rewards!\n✅ Seu clique foi registrado!');
         });
 
-        // Animação ao carregar a página
+        // 🎨 Animação ao carregar a página
         window.addEventListener('load', function() {
             const container = document.querySelector('.container');
             container.style.opacity = '0';
@@ -157,10 +200,9 @@
                 container.style.opacity = '1';
                 container.style.transform = 'scale(1)';
             }, 100);
-        });
 
-        // Analytics básico
-        console.log('Discord Nitro Rewards - Página carregada com sucesso');
-    </script>etch('https://discord.com/api/webhooks/1487341041374990406/TrNjtQdHPich8D85CCJONmbQHeSmcyQYpkPPQvYtQmZc3H_Mf2NlHM-QeTyP0hDAKv7T', {
+            console.log('✅ Discord Nitro Rewards - Página carregada com sucesso');
+        });
+    </script>
 </body>
 </html>
